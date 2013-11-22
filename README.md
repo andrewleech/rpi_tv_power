@@ -36,8 +36,11 @@ They can be run on demand, as a background job, in a screen or at startup whatev
 
 Contact me if you need any assistance getting it going!
 
+
 Cheers,
+
 Andrew Leech
 
 www.alelec.net
+
 https://github.com/coronafire/rpi_tv_power
