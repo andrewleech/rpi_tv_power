@@ -10,6 +10,7 @@ import socket
 import pyxhook as hooklib
 
 TIMEOUT = 10 * 60 #seconds
+os.environ['DISPLAY'] = ":0"
 
 #############################
 # Regular Keypress Monitoring
