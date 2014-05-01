@@ -20,6 +20,7 @@ CEC_DEBUG = True
 MYTH_IP = "192.168.0.9"
 MYTH_SOCKET = 55555
 LOG_PATH='/home/corona/tv_suspend.log'
+NET_TIMEOUT = 11 * 60 #seconds
 
 #logging
 FORMAT="%(asctime)-15s : %(message)s"
@@ -94,6 +95,9 @@ t.start()
 #Give cec-client time to start up
 time.sleep(5)
 
+global lastNetwork
+lastNetwork = time.time()
+
 while True :
     s = socket.socket()         # Create a socket object
     host = MYTH_IP
@@ -109,8 +113,10 @@ while True :
 
         if "on" in read:
             desiredOn = True
+            lastNetwork = time.time()
         elif "off" in read:
             desiredOn = False
+            lastNetwork = time.time()
 
         if last_net != read:
             logger.debug("socket: " + read)
@@ -145,6 +151,11 @@ while True :
             p.stdin.write("standby 0\n")
             time.sleep (3)
             cecGetPowerStatus()
+
+
+        # Comms has dropped out, let system service manager restart
+        if time.time() - lastNetwork > NET_TIMEOUT:
+            exit()
 
         # Pause before next scan
         time.sleep (0.5)
