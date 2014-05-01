@@ -1,7 +1,7 @@
 #!/usr/bin/env python
 
 import sys
-from subprocess import PIPE, Popen
+from subprocess import PIPE, Popen, call, check_output, CalledProcessError
 from threading  import Thread
 import time
 import socket
@@ -16,10 +16,19 @@ import logging.handlers
 
 
 CEC_DEBUG = True
-
 MYTH_IP = "192.168.0.9"
 MYTH_SOCKET = 55555
 LOG_PATH='/home/corona/tv_suspend.log'
+
+try:
+    call("for p in `pgrep cec-client`; do echo \"Killing cec-client: \" $p; sudo kill -9 $p; done", shell=True)
+    #pids = check_output(["pgrep", "cec-client"], shell=True)
+except CalledProcessError as e:
+    #pids = e.output
+    pass
+
+#for p in pids:
+#  call(["kill", "-9", p], shell=True)
 
 #logging
 FORMAT="%(asctime)-15s : %(message)s"
