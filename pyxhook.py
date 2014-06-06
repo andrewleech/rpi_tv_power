@@ -56,7 +56,7 @@ class HookManager(threading.Thread):
     KeyUp = The function to execute when a key is released, if it returns anything. It hands the function an argument that is the pyxhookkeyevent class.
     """
     
-    def __init__(self):
+    def __init__(self, displayname = None):
         threading.Thread.__init__(self)
         self.finished = threading.Event()
         
@@ -81,8 +81,8 @@ class HookManager(threading.Thread):
         self.contextEventMask = [X.KeyPress,X.MotionNotify]
         
         # Hook to our display.
-        self.local_dpy = display.Display()
-        self.record_dpy = display.Display()
+        self.local_dpy = display.Display(displayname)
+        self.record_dpy = display.Display(displayname)
         
     def run(self):
         # Check if the extension is present

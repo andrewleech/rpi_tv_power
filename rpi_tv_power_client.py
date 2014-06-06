@@ -14,7 +14,6 @@ except ImportError:
 import logging
 import logging.handlers
 
-
 CEC_DEBUG = True
 
 MYTH_IP = "192.168.0.9"
@@ -24,12 +23,14 @@ NET_TIMEOUT = 11 * 60 #seconds
 
 #logging
 FORMAT="%(asctime)-15s : %(message)s"
-logHandler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=2*1024*1024, backupCount=2)
+#logHandler = logging.handlers.RotatingFileHandler(LOG_PATH, maxBytes=2*1024*1024, backupCount=2)
+logHandler = logging.StreamHandler(sys.stdout)
 logHandler.setFormatter(logging.Formatter(FORMAT))
 logger = logging.getLogger('log')
 logger.setLevel(logging.DEBUG)
 logger.addHandler(logHandler)
 
+logger.debug("Startup")
 
 # Holds current internal bool of desired TV power
 desiredOn = True
