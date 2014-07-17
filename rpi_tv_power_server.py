@@ -48,8 +48,6 @@ def debugThread(my_globals):
 
 
 TIMEOUT = 10 * 60 #seconds
-os.environ['DISPLAY'] = ":0"
-LOG_PATH='/tmp/tv_suspend.log'
 
 
 ###########
@@ -76,8 +74,6 @@ def OnKeyDownEvent(ignored):
     #print "press"
     logger.debug("keypress")
     resetQueue.put("keypress")
-    #keyPressTimeout = time.time()
-    #sleepActive = False
 
 def OnKeyUpEvent(ignored):
     pass
@@ -86,13 +82,6 @@ def OnKeyUpEvent(ignored):
     #keyPressTimeout = time.time()
     #sleepActive = False
 
-#def getXset():
-#    ret = None
-#    try:
-#        ret = Popen(['xset', '-q'], env={"PATH":"/usr/bin/", "DISPLAY":":0"}, stderr=PIPE, stdout=PIPE).stdout.read()
-#    except Exception as e:
-#        logger.warn("exception in getXset(): " + str(e))
-#    return ret
 
 def createHookManager(disp):
     hm = hooklib.HookManager(disp)
@@ -112,16 +101,17 @@ def xHooksThread(logger):
     while True:
         for disp in hms:
             try:
-                if hms[disp]._Thread__stopped:
-                    raise AttributeError
-            except AttributeError:
-                time.sleep(5)
-                logger.debug("Starting xhook on display %s" % disp)
-                hms[disp] = createHookManager(disp)
+                try:
+                    if hms[disp]._Thread__stopped:
+                        raise AttributeError
+                except AttributeError:
+                    time.sleep(5)
+                    logger.debug("Starting xhook on display %s" % str(disp))
+                    hms[disp] = createHookManager(disp)
             except Exception as e:
-                logger.debug("Error in xhook on display %s") % disp
+                logger.debug("Error in xhook on display %s" % str(disp))
                 logger.exception(e)
-                time.sleep(5)
+                time.sleep(30)
         time.sleep(10)
 
 
@@ -206,6 +196,8 @@ lastStat = time.time()
 last_mythtv_status = False
 last_xbmc_status = False
 
+mythtvStatus = mythtv_status.mythtv_status()
+
 while True:
     try:
 
@@ -217,48 +209,8 @@ while True:
             logger.debug("idleTime: " + str((time.time() - keyPressTimeout)/60))
             lastStat = time.time()
 
-        ## Mythfrontend status
-        #status = None
-        #try:
-        #    mythStatusHttp = urllib2.urlopen("http://localhost:6547/Frontend/GetStatus", timeout=2)
-        #    if mythStatusHttp:
-        #        mythStatus = mythStatusHttp.read()
-        #        status = xmltodict.parse(mythStatus)
-        #except urllib2.URLError:
-        #    pass
-        #
-        #state = None
-        #playspeed = None
-        #if status:
-        #    for entry in status[u'FrontendStatus'][u'State']['String']:
-        #        if entry['Key'] == 'state':
-        #            state = entry['Value']
-        #            #print entry['Value']
-        #        if entry['Key'] == 'playspeed':
-        #            playspeed = entry['Value']
-        #
-        #    if 'idle' in state:
-        #        playstate = 'idle'
-        #
-        #    if 'Watching' in state:
-        #        if '1' in playspeed:
-        #            playstate = 'playing'
-        #        else:
-        #            playstate = 'pause'
-        #
-        #
-        #    if prevplaystate != playstate:
-        #        print playstate
-        #        logger.debug("mythfrontend: " + playstate)
-        #
-        #    prevplaystate = playstate
-        #
-        #
-        #    if playstate == 'playing':
-        #        keyPressTimeout = time.time()
-
         # Monitor MythTV
-        current_mythtv_status = mythtv_status.getStatus()
+        current_mythtv_status = mythtvStatus.getStatus()
         if current_mythtv_status:
             if not last_mythtv_status:
                 logger.debug("mythtv start playing")
@@ -298,8 +250,6 @@ while True:
             sleepActive = False
 
         time.sleep(0.5)
-    except Xlib.error.ConnectionClosedError:
-        StartHooks()
 
     except Exception as e:
         logger.warn("exception in main()")
