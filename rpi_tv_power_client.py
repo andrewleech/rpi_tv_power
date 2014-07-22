@@ -14,8 +14,6 @@ except ImportError:
 import logging
 import logging.handlers
 
-#import Pyro4
-
 import zmq
 
 from tinyrpc.protocols.jsonrpc import JSONRPCProtocol

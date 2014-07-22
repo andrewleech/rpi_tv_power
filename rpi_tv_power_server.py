@@ -1,59 +1,26 @@
 #!/usr/bin/env python
-import urllib2
 from subprocess import PIPE, Popen, call, check_output, CalledProcessError
-#import xmltodict
+
 import time
 from threading import Thread
 import os
 import sys
-import socket
 import pyxhook as hooklib
-import Xlib.error
 import logging
 import logging.handlers
-#import pydevd
 import Queue
 
 import mythtv_status
 import xbmc_status
 
 import zmq
-
 from tinyrpc.protocols.jsonrpc import JSONRPCProtocol
 from tinyrpc.transports.zmq import ZmqClientTransport
 from tinyrpc import RPCClient
 
-# import Pyro4
-
-#pydevd.settrace('192.168.0.9', port=2345, stdoutToServer=True, stderrToServer=True)
-
-from twisted.internet import reactor
-from twisted.cred import portal, checkers
-from twisted.conch import manhole, manhole_ssh
 
 
-def debugThread(my_globals):
-
-    def getManholeFactory(namespace):
-        realm = manhole_ssh.TerminalRealm()
-        def getManhole(_):
-            return manhole.Manhole(namespace)
-        realm.chainedProtocolFactory.protocolFactory = getManhole
-        p = portal.Portal(realm)
-        p.registerChecker(
-            checkers.InMemoryUsernamePasswordDatabaseDontUse(admin='diskdisk'))
-        f = manhole_ssh.ConchFactory(p)
-        return f
-
-    reactor.listenTCP(2222, getManholeFactory(my_globals))
-
-    reactor.run()
-
-#dt = Thread(target=debugThread, args=(globals(),))
-#dt.daemon = True # thread dies with the program
-#dt.start()
-
-SERVIER_ADDR = "tcp://rpi.local:6601"
+SERVER_ADDR = "tcp://rpi.local:6601"
 
 TIMEOUT = 10 * 60 #seconds
 RESEND_TIMEOUT = 5 * 60 #seconds
@@ -194,7 +161,7 @@ def main():
 
         rpc_client = RPCClient(
             JSONRPCProtocol(),
-            ZmqClientTransport.create(ctx, SERVIER_ADDR)
+            ZmqClientTransport.create(ctx, SERVER_ADDR)
         )
 
         remote_server = rpc_client.get_proxy()
@@ -256,10 +223,12 @@ def main():
                 pass
 
             now = time.time()
-            sleepActive = (now - keyPressTimeout) > TIMEOUT
 
-            if now - timeSinceComms > RESEND_TIMEOUT:
+            currSleep = (now - keyPressTimeout) > TIMEOUT
+
+            if (now - timeSinceComms > RESEND_TIMEOUT) or (currSleep != sleepActive):
                 timeSinceComms = now
+                sleepActive = currSleep
                 logger.debug("Sending Status: " + ("off" if sleepActive else "on"))
                 result = tv_controller.SetPowerStatus(not sleepActive)
                 logger.debug(result)
