@@ -25,9 +25,13 @@ import tinyrpc.dispatch
 
 CEC_DEBUG = True
 
-#MYTH_IP = "192.168.0.9"
-#MYTH_SOCKET = 55555
-SERVIER_ADDR = "tcp://192.168.0.6:6601"
+#
+#SERVIER_ADDR = "tcp://192.168.0.15:6601"
+
+#ip = socket.gethostbyname("rpi.local")
+#SERVIER_ADDR = "tcp://%s:6601" % ip
+
+SERVIER_ADDR = "tcp://*:6601"
 
 #LOG_PATH='/home/corona/tv_suspend.log'
 NET_TIMEOUT = 11 * 60 #seconds
